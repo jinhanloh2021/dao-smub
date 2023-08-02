@@ -10,7 +10,7 @@ import {
   VOTING_PERIOD,
 } from '../helper-hardhat-config';
 
-describe('Deployment', () => {
+describe('Deployment tests', () => {
   let eCredit: ECredit,
     timeLock: TimeLock,
     governorContract: GovernorContract,
@@ -94,9 +94,76 @@ describe('Deployment', () => {
     });
   });
 
-  describe('TimeLock contract', () => {});
+  describe('TimeLock contract', () => {
+    it('Should set MinDelay correctly', async () => {
+      assert.equal(
+        (await timeLock.getMinDelay()).toString(),
+        MIN_DELAY.toString()
+      );
+    });
+    it('Should set proposer role to Governor contract', async () => {
+      assert.isTrue(
+        await timeLock.hasRole(
+          await timeLock.PROPOSER_ROLE(),
+          await governorContract.getAddress()
+        )
+      );
+    });
+    it('Should set executor role to anyone', async () => {
+      assert.isTrue(
+        await timeLock.hasRole(await timeLock.EXECUTOR_ROLE(), ADDRESS_ZERO)
+      );
+    });
+    it('Should revoke admin role from deployer', async () => {
+      assert.isFalse(
+        await timeLock.hasRole(
+          await timeLock.DEFAULT_ADMIN_ROLE(),
+          deployer.address
+        )
+      );
+      assert.isFalse(
+        await timeLock.hasRole(
+          await timeLock.TIMELOCK_ADMIN_ROLE(),
+          deployer.address
+        )
+      );
+    });
+  });
 
-  describe('Governor contract', () => {});
+  describe('Governor contract', () => {
+    it('Should set TimeLock correctly', async () => {
+      assert.equal(
+        await governorContract.timelock(),
+        await timeLock.getAddress()
+      );
+    });
+    it('Should set Governance Token correctly', async () => {
+      assert.equal(await governorContract.token(), await eCredit.getAddress());
+    });
+    it('Should set voting delay correctly', async () => {
+      assert.equal(
+        (await governorContract.votingDelay()).toString(),
+        VOTING_DELAY.toString()
+      );
+    });
+    it('Should set voting period correctly', async () => {
+      assert.equal(
+        (await governorContract.votingPeriod()).toString(),
+        VOTING_PERIOD.toString()
+      );
+    });
+    it('Should set quorum percentage correctly', async () => {
+      assert.equal(
+        // @ts-ignore
+        (await governorContract.quorumNumerator()).toString(),
+        QUORUM_PERCENTAGE.toString()
+      );
+    });
+  });
 
-  describe('Smub contract', () => {});
+  describe('Smub contract', () => {
+    it('Should set TimeLock as owner', async () => {
+      assert.equal(await smub.owner(), await timeLock.getAddress());
+    });
+  });
 });

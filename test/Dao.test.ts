@@ -1,16 +1,19 @@
 import { assert, expect } from 'chai';
+import { anyValue } from '@nomicfoundation/hardhat-chai-matchers/withArgs';
 import hre from 'hardhat';
 import { ECredit, GovernorContract, Smub, TimeLock } from '../typechain-types';
 import {
   ADDRESS_ZERO,
   MIN_DELAY,
+  PROPOSAL_DESCRIPTION,
   QUORUM_PERCENTAGE,
   VOTING_DELAY,
   VOTING_PERIOD,
 } from '../helper-hardhat-config';
 import { HardhatEthersSigner } from '@nomicfoundation/hardhat-ethers/signers';
+import moveBlocks from '../utils/move-blocks';
 
-describe('Smub unit tests', () => {
+describe('DAO tests', () => {
   let eCredit: ECredit,
     timeLock: TimeLock,
     governorContract: GovernorContract,
@@ -26,6 +29,7 @@ describe('Smub unit tests', () => {
     const eCreditFactory = await hre.ethers.getContractFactory('ECredit');
     eCredit = await eCreditFactory.deploy();
     await eCredit.waitForDeployment();
+    await eCredit.delegate(deployer.address); // Increases checkpoint by 1
     const eCreditAddress = await eCredit.getAddress();
 
     /** 02 - Deploy TimeLock */
@@ -38,7 +42,6 @@ describe('Smub unit tests', () => {
     );
     await timeLock.waitForDeployment();
     const timeLockAddress = await timeLock.getAddress();
-    // console.log(`TimeLock deployed at: ${timeLockAddress}`);
 
     /** 03 - Deploy Governor Contract */
     const governorContractFactory = await hre.ethers.getContractFactory(
@@ -79,8 +82,75 @@ describe('Smub unit tests', () => {
   });
 
   it('Should only allow GovernorContract to update EXCO', async () => {
+    await expect(smub.setExco(0, 'Jin Han')).to.be.revertedWith(
+      'Ownable: caller is not the owner'
+    );
+  });
+
+  it('Can propose, vote, queue and execute', async () => {
+    /** Propose */
+    const encodedSetExcoCall = smub.interface.encodeFunctionData('setExco', [
+      0,
+      'Jin Han',
+    ]);
+    let proposalId: bigint = BigInt(0);
+    governorContract = await governorContract.addListener(
+      'ProposalCreated',
+      (pid) => {
+        proposalId = pid;
+      }
+    );
     await expect(
-      smub.connect(nonDeployer).setExco(0, 'Jin Han')
-    ).to.be.revertedWith('Ownable: caller is not the owner');
+      await (
+        await governorContract.propose(
+          [await smub.getAddress()],
+          [0],
+          [encodedSetExcoCall],
+          PROPOSAL_DESCRIPTION
+        )
+      ).wait(1)
+    )
+      .to.emit(governorContract, 'ProposalCreated')
+      .withArgs(
+        proposalId,
+        deployer.address,
+        [await smub.getAddress()],
+        [0],
+        [''],
+        [encodedSetExcoCall],
+        anyValue,
+        anyValue,
+        PROPOSAL_DESCRIPTION
+      );
+    // const proposalTx = await governorContract.propose(
+    //   [await smub.getAddress()],
+    //   [0],
+    //   [encodedSetExcoCall],
+    //   PROPOSAL_DESCRIPTION
+    // );
+    // await proposalTx.wait(1);
+    await moveBlocks(VOTING_DELAY + 1);
+
+    // The Proposal State is an enum data type, defined in the IGovernor contract.
+    // 0:Pending, 1:Active, 2:Canceled, 3:Defeated, 4:Succeeded, 5:Queued, 6:Expired, 7:Executed
+    let proposalState = await governorContract.state(proposalId);
+    assert.equal(proposalState.toString(), '1'); // Active state
+
+    /** Vote */
+    const voteWay = 1;
+    const reason = 'My reason for voting';
+    const voteTx = await governorContract.castVoteWithReason(
+      proposalId,
+      voteWay,
+      reason
+    );
+    await voteTx.wait(1);
+    await moveBlocks(VOTING_PERIOD + 1);
+    proposalState = await governorContract.state(proposalId);
+    assert.equal(proposalState.toString(), '4'); // Successful state
+
+    /** Queue */
+
+    /** Execute */
   });
 });

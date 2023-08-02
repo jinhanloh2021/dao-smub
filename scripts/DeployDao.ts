@@ -31,6 +31,7 @@ export default async function deployDAO(hre: HardhatRuntimeEnvironment) {
   const eCreditFactory = await hre.ethers.getContractFactory('ECredit');
   const eCredit: ECredit = await eCreditFactory.deploy();
   await eCredit.waitForDeployment();
+  await eCredit.delegate(deployer.address);
   const eCreditAddress = await eCredit.getAddress();
   console.log(`ECredit deployed at: ${eCreditAddress}`);
 
@@ -89,8 +90,8 @@ export default async function deployDAO(hre: HardhatRuntimeEnvironment) {
   console.log(`Smub deployed at: ${smubAddress}`);
   const transferOwnerTx = await smub.transferOwnership(timeLockAddress);
   transferOwnerTx.wait(1);
-  // console.log(`Smub owner: ${await smub.owner()}`);
-  // console.log('-'.repeat(48));
+  console.log(`Smub owner: ${await smub.owner()}`);
+  console.log('-'.repeat(48));
   return { eCredit, timeLock, governorContract, smub };
 }
 
