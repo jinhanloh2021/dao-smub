@@ -26,6 +26,7 @@ describe('Deployment tests', () => {
     const eCreditFactory = await hre.ethers.getContractFactory('ECredit');
     eCredit = await eCreditFactory.deploy();
     await eCredit.waitForDeployment();
+    await eCredit.delegate(deployer.address);
     const eCreditAddress = await eCredit.getAddress();
 
     /** 02 - Deploy TimeLock */
@@ -38,7 +39,6 @@ describe('Deployment tests', () => {
     );
     await timeLock.waitForDeployment();
     const timeLockAddress = await timeLock.getAddress();
-    // console.log(`TimeLock deployed at: ${timeLockAddress}`);
 
     /** 03 - Deploy Governor Contract */
     const governorContractFactory = await hre.ethers.getContractFactory(

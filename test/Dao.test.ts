@@ -12,6 +12,7 @@ import {
 } from '../helper-hardhat-config';
 import { HardhatEthersSigner } from '@nomicfoundation/hardhat-ethers/signers';
 import moveBlocks from '../utils/move-blocks';
+import { moveTime } from '../utils/move-time';
 
 describe('DAO tests', () => {
   let eCredit: ECredit,
@@ -150,7 +151,30 @@ describe('DAO tests', () => {
     assert.equal(proposalState.toString(), '4'); // Successful state
 
     /** Queue */
+    const descriptionHash = hre.ethers.id(PROPOSAL_DESCRIPTION);
+    const queueTx = await governorContract.queue(
+      [await smub.getAddress()],
+      [0],
+      [encodedSetExcoCall],
+      descriptionHash
+    );
+    await queueTx.wait(1);
+    await moveTime(MIN_DELAY + 1);
+    await moveBlocks(1);
+
+    proposalState = await governorContract.state(proposalId);
+    assert.equal(proposalState.toString(), '5');
 
     /** Execute */
+    const executeTx = await governorContract.execute(
+      [await smub.getAddress()],
+      [0],
+      [encodedSetExcoCall],
+      descriptionHash
+    );
+    await executeTx.wait(1);
+    await moveBlocks(1);
+    proposalState = await governorContract.state(proposalId);
+    assert.equal(proposalState.toString(), '7');
   });
 });
