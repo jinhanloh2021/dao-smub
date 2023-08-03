@@ -1,4 +1,5 @@
 import { HardhatUserConfig } from 'hardhat/config';
+import '@nomicfoundation/hardhat-verify';
 import '@nomicfoundation/hardhat-toolbox';
 import 'dotenv/config';
 
@@ -12,19 +13,29 @@ const config: HardhatUserConfig = {
     hardhat: {
       chainId: 31337,
     },
-    // sepolia: {
-    //   url: process.env.SEPOLIA_RPC_URL || '',
-    //   accounts: [process.env.SEPOLIA_PRIVATE_KEY || '0xkey'],
-    //   chainId: 11155111,
-    // },
+    sepolia: {
+      url: process.env.SEPOLIA_RPC_URL || '',
+      accounts: [process.env.SEPOLIA_PRIVATE_KEY || '0xkey'],
+      chainId: 11155111,
+    },
     localhost: {
       url: 'http://127.0.0.1:8545/',
       chainId: 31337,
     },
   },
-  // etherscan: {
-  //   apiKey: process.env.ETHERSCAN_API_KEY || 'Key',
-  // },
+  etherscan: {
+    apiKey: process.env.ETHERSCAN_API_KEY || 'Key',
+    customChains: [
+      {
+        network: 'sepolia',
+        chainId: 11155111,
+        urls: {
+          apiURL: 'http://api-sepolia.etherscan.io/api',
+          browserURL: 'https://sepolia.etherscan.io/',
+        },
+      },
+    ],
+  },
   mocha: {
     timeout: 300000,
   },

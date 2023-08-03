@@ -1,10 +1,14 @@
 /** TimeLock Constructor */
 export const MIN_DELAY = 3600; // ~ 1 hour. Delay between successful vote and execute, ie queue time
+export const MIN_DELAY_STAGE = 60;
 
 /** GovernanceContract Constructor */
 export const VOTING_PERIOD = 5; // Blocks
 export const VOTING_DELAY = 1; // Between proposal and active voting phase
 export const QUORUM_PERCENTAGE = 4; // Min percentage of members needed for vote
+export const VOTING_PERIOD_STAGE = 5; // Block time ~15s
+export const VOTING_DELAY_STAGE = 1;
+export const QUORUM_PERCENTAGE_STAGE = 4;
 
 /** */
 export const ADDRESS_ZERO = '0x0000000000000000000000000000000000000000';

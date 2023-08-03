@@ -11,7 +11,7 @@ import {
 
 /**
  * @run yarn hardhat run scripts/DeployDao.ts
- * @notice Deploys the entire DAO
+ * @notice HARDHAT DEPLOYMENT: Deploys the entire DAO to Hardhat
  * 1 - Deploy eCredit Token
  * 2 - Deploy TimeLock
  * 3 - Deploy GovernorContract
@@ -19,7 +19,7 @@ import {
  * 5 - Deploy Smub and transfer ownership to TimeLock
  */
 
-export default async function deployDAO(hre: HardhatRuntimeEnvironment) {
+export default async function deployHardhatDAO(hre: HardhatRuntimeEnvironment) {
   console.log(
     `${'-'.repeat(13)}Deployment on ${hre.network.name}${'-'.repeat(13)}`
   );
@@ -34,14 +34,6 @@ export default async function deployDAO(hre: HardhatRuntimeEnvironment) {
   await eCredit.delegate(deployer.address);
   const eCreditAddress = await eCredit.getAddress();
   console.log(`ECredit deployed at: ${eCreditAddress}`);
-
-  /** Verification on testnet/mainnet */
-  // if (!developmentChains.include(hre.network.name)) {
-  //   await hre.run('verify:verify', {
-  //     address: eCreditAddress,
-  //     constructorArguments: [],
-  //   });
-  // }
 
   /** 02 - Deploy TimeLock */
   const timeLockFactory = await hre.ethers.getContractFactory('TimeLock');
@@ -92,10 +84,9 @@ export default async function deployDAO(hre: HardhatRuntimeEnvironment) {
   transferOwnerTx.wait(1);
   console.log(`Smub owner: ${await smub.owner()}`);
   console.log('-'.repeat(48));
-  return { eCredit, timeLock, governorContract, smub };
 }
 
-deployDAO(hre)
+deployHardhatDAO(hre)
   .then(() => process.exit(0))
   .catch((e) => {
     console.error(e);
