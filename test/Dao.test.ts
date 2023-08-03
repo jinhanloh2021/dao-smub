@@ -19,11 +19,11 @@ describe('DAO tests', () => {
     timeLock: TimeLock,
     governorContract: GovernorContract,
     smub: Smub;
-  let deployer: HardhatEthersSigner, nonDeployer: HardhatEthersSigner;
+  let deployer: HardhatEthersSigner;
 
   beforeEach(async () => {
     /** Setup Accounts */
-    [deployer, nonDeployer] = await hre.ethers.getSigners();
+    [deployer] = await hre.ethers.getSigners();
 
     /** Deploy contracts */
     /** 01 - Deploy eCredit Token */
@@ -76,7 +76,6 @@ describe('DAO tests', () => {
     const smubContractFactory = await hre.ethers.getContractFactory('Smub');
     smub = await smubContractFactory.deploy();
     await smub.waitForDeployment();
-    const smubAddress = await smub.getAddress();
 
     const transferOwnerTx = await smub.transferOwnership(timeLockAddress);
     transferOwnerTx.wait(1);
@@ -123,13 +122,6 @@ describe('DAO tests', () => {
         anyValue,
         PROPOSAL_DESCRIPTION
       );
-    // const proposalTx = await governorContract.propose(
-    //   [await smub.getAddress()],
-    //   [0],
-    //   [encodedSetExcoCall],
-    //   PROPOSAL_DESCRIPTION
-    // );
-    // await proposalTx.wait(1);
     await moveBlocks(VOTING_DELAY + 1);
 
     // The Proposal State is an enum data type, defined in the IGovernor contract.
@@ -176,5 +168,7 @@ describe('DAO tests', () => {
     await moveBlocks(1);
     proposalState = await governorContract.state(proposalId);
     assert.equal(proposalState.toString(), '7');
+
+    assert.equal((await smub.getExco(0)).toString(), 'Jin Han');
   });
 });

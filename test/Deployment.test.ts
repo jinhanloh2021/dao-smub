@@ -1,4 +1,4 @@
-import { assert, expect } from 'chai';
+import { assert } from 'chai';
 import hre from 'hardhat';
 import { ECredit, GovernorContract, Smub, TimeLock } from '../typechain-types';
 import { HardhatEthersSigner } from '@nomicfoundation/hardhat-ethers/signers';
@@ -10,16 +10,16 @@ import {
   VOTING_PERIOD,
 } from '../helper-hardhat-config';
 
-describe('Deployment tests', () => {
+describe('Unit tests', () => {
   let eCredit: ECredit,
     timeLock: TimeLock,
     governorContract: GovernorContract,
     smub: Smub;
-  let deployer: HardhatEthersSigner, nonDeployer: HardhatEthersSigner;
+  let deployer: HardhatEthersSigner;
 
   beforeEach(async () => {
     /** Setup Accounts */
-    [deployer, nonDeployer] = await hre.ethers.getSigners();
+    [deployer] = await hre.ethers.getSigners();
 
     /** Deploy contracts */
     /** 01 - Deploy eCredit Token */
@@ -72,7 +72,6 @@ describe('Deployment tests', () => {
     const smubContractFactory = await hre.ethers.getContractFactory('Smub');
     smub = await smubContractFactory.deploy();
     await smub.waitForDeployment();
-    const smubAddress = await smub.getAddress();
 
     const transferOwnerTx = await smub.transferOwnership(timeLockAddress);
 
