@@ -10,7 +10,7 @@ import {
 } from '../helper-hardhat-config';
 
 /**
- * @run yarn hardhat run scripts/DeployDao.ts
+ * @run yarn hardhat run scripts/DeployHardhatDao.ts
  * @notice HARDHAT DEPLOYMENT: Deploys the entire DAO to Hardhat
  * 1 - Deploy eCredit Token
  * 2 - Deploy TimeLock
