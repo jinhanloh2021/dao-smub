@@ -151,10 +151,10 @@ export default async function deploySepoliaDAO(hre: HardhatRuntimeEnvironment) {
 /**
  * Deployed contracts - Sepolia
  *
- * GovernorContract: 0x574D20e8762d2DBFa380aCD8c8CD7ff9A697c647
- * Smub: 0x09a25d4581Ff8153789ddE5Ecb54767AF98E669F
- * TimeLock: 0xA106F55cFDc29085e767A4f767EA450E5eD88215
- * ECredit: 0xe17280dA6a3b09C5Cec58765808478ceEbE83b66
+ * GovernorContract: 0x4De1EDda4E86D52384d0342eC7F016fc67bA9440
+ * Smub: 0xFa3edDdde17B84bE990fb209dB659981c462Bc28
+ * TimeLock: 0x7056c28B7D8442435F8bf5c370c6Cd20f9B6f9FC
+ * ECredit: 0xA534Cb4338efe6348301d1C65FFEcD927978a8bc
  */
 
 deploySepoliaDAO(hre)
